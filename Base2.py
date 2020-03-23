@@ -4,7 +4,7 @@ from discord.utils import get
 import youtube_dl
 import os
 
-TOKEN= 'NjkxMjYyNDYyMDQwOTk3ODk4.XndaXg.g8y1R8EZZPlVEj9SCbQ6ytlYavg' 
+TOKEN= ''
 BOT_PREFIX = '.'
 
 
@@ -89,6 +89,5 @@ async def play(ctx, url: str):
     await ctx.send(f"Playing: {nname}")
     print("playing\n")
 
-.j Trove
 
 bot.run(TOKEN)
