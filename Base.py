@@ -5,6 +5,8 @@ from discord.ext import commands
 from discord.utils import get
 import os
 
+import config
+
 #Prefijo de llamada
 client = commands.Bot(command_prefix= '.')
 
@@ -55,6 +57,6 @@ async def play(ctx, url):
 
 
 
-TOKEN= 'NjkxMjYyNDYyMDQwOTk3ODk4.XndaXg.g8y1R8EZZPlVEj9SCbQ6ytlYavg'
+TOKEN= config.DISCORD_TOKEN
 #token
 client.run(TOKEN)

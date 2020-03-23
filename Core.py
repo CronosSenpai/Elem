@@ -4,9 +4,13 @@ from discord.utils import get
 import youtube_dl
 import os
 
-TOKEN= 'NjkxMjYyNDYyMDQwOTk3ODk4.XndaXg.g8y1R8EZZPlVEj9SCbQ6ytlYavg' 
+import config
+from Music import Music
+
+TOKEN = config.DISCORD_TOKEN
 BOT_PREFIX = '.'
 
+infoMusic = Music()
 
 bot = commands.Bot(command_prefix=BOT_PREFIX)
 
@@ -15,7 +19,7 @@ async def on_ready():
     print('ok')
 
 
-@bot.command(pass_context=True, aliases=['j', 'joi'])
+@bot.command(pass_context=True, aliases=['j', 'joi'], invoke_without_subcommand=True)
 async def join(ctx):
     global voice
     channel = ctx.message.author.voice.channel
@@ -46,10 +50,10 @@ async def leave(ctx):
 
 @bot.command(pass_context=True, alisases=['p', 'pla'])
 async def play(ctx, url: str):
-    song_there = os.path.isfile("song.mp3")
+    song_there = os.path.isfile("./audio/song.mp3")
     try:
         if song_there:
-            os.remove("song.mp3")
+            os.remove("./audio/song.mp3")
             print("Removed old song file")
     except PermissionError:
         print("Trying to delete song file, but it's being played")
@@ -67,26 +71,47 @@ async def play(ctx, url: str):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'outtmpl': 'audio/song.mp3',
+
     }
 
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        print('Dowloading audio now\n')
-        ydl.download([url])
+    ytdl = youtube_dl.YoutubeDL(ydl_opts)
+    print('Dowloading audio now\n')
+    ytdl.download([url])
+    dataMusic = ytdl.extract_info(url=url)
+    
 
-    for file in os.listdir("./"):
+    '''
+    for file in os.listdir("./audio"):
         if file.endswith(".webm"):
             name = file
             print(f"Renamed file : {file}\n")
-            os.rename(file, "song.mp3")
-
-
-    voice.play(discord.FFmpegPCMAudio("song.mp3"))
+            os.rename(file, "./audio/song.mp3")
+    '''
+    infoMusic.isPlaying = True
+    infoMusic.currentSong = dataMusic['title']
+    voice.play(discord.FFmpegPCMAudio("./audio/song.mp3"))
     voice.source = discord.PCMVolumeTransformer(voice.source)
     voice.source.volume = 0.07
 
 
-    nname = name.rsplit("-", 2)
-    await ctx.send(f"Playing: {nname}")
+    #nname = name.rsplit("-", 2)
+    await ctx.send(f"Playing: {dataMusic['title']}")
     print("playing\n")
+
+@bot.command(pass_context = True)
+async def current(ctx):
+    voice = get(bot.voice_clients, guild= ctx.guild)
+
+    if voice and voice.is_connected():
+        if infoMusic.isPlaying:
+            await ctx.send(f" Current playing: {infoMusic.currentSong}")
+        else:
+            await ctx.send("Actualmente no se esta reproduciendo nada")
+
+    else:
+        print("Bot se fue del canal")
+        await ctx.send("Don't think i am in a voice channel")
+
 
 bot.run(TOKEN)
